@@ -22,9 +22,49 @@ from tqdm import tqdm
 from model.pspnet import PSPNet
 from utils import trans
 from pathlib import Path
+import random 
+
+class rotation :
+
+    def __init__(self, angles):
+        self.angles = angles
+
+    def __call__(self, x):
+        angle = random.choice(
+            self.angles
+            )
+        return F.rotate(x, angle)
+
+class brightness:
+    def __init__(self, brightness_factor):
+        self.brightness_factor = brightness_factor
+
+    def __call__(self, x):
+        brightness_factor = random.choice(
+            self.brightness_factor
+            )
+        return F.adjust_brightness(x, brightness_factor)
+
+
 
 def dataset_get_imgs(dataset_root_dir=f''):
-    dataset = D.ImageFolder(dataset_root_dir, )
+    dataset = D.ImageFolder(dataset_root_dir)
+
+def rand_img_data_transforms(dataset_root_dir=f''):
+    rotation_transform = rotation(
+        angles=[-30, -15, 0, 15, 30]
+    )
+    brightness_transform = brightness(
+        brightness_factor=[1,2,3]
+    )
+    datatransform  = T.Compose([
+        rotation_transform, 
+        brightness_transform
+        ])
+    dataset_augmented = D.ImageFolder(
+        dataset_root_dir, 
+        transform=datatransform
+        )
 
 def img_data_transforms(dataset_root_dir=f''):
     size = (473, 473)
@@ -53,10 +93,11 @@ def img_data_transforms(dataset_root_dir=f''):
     ],P)
     imgs_transforms = [applier(dataset_get_imgs) 
         for _ in range()]
-    dataset_augmented = D.ImageFolder(dataset_root_dir )
+    dataset_augmented = D.ImageFolder(dataset_root_dir)
 
 
 
 if __name__ == "__main__":
     dataset_root_dir=f''
     dataset_get_imgs(dataset_root_dir)
+    img_data_transforms(dataset_root_dir)
